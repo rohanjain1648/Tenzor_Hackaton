@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Tenzor — Pitch Deck</title>
+<style>
+:root{
+  --bg:#0a0e1a;--card:#1a2236;--accent:#6366f1;--accent2:#22d3ee;
+  --text:#f1f5f9;--muted:#94a3b8;--border:rgba(99,102,241,.25);
+  --grad:linear-gradient(135deg,#6366f1 0%,#22d3ee 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);}
+
+/* blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;opacity:.15;z-index:0;}
+.blob1{width:500px;height:500px;background:#6366f1;top:-150px;left:-150px;}
+.blob2{width:400px;height:400px;background:#22d3ee;bottom:-100px;right:-100px;}
+
+/* slide num */
+#slide-num{position:fixed;top:22px;right:30px;font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--muted);z-index:50;}
+
+/* deck */
+#deck{position:relative;width:100vw;height:100vh;z-index:1;}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:56px 80px 110px;
+  opacity:0;pointer-events:none;transform:translateX(50px);
+  transition:opacity .4s ease,transform .4s ease;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+
+/* nav */
+#nav{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:12px;
+  background:rgba(17,24,39,.92);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:50px;
+  padding:9px 20px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.45);
+}
+#nav button{background:none;border:none;color:var(--text);cursor:pointer;font-size:17px;padding:3px 10px;border-radius:8px;transition:background .2s;}
+#nav button:hover{background:rgba(99,102,241,.2);}
+#nav span{color:var(--muted);font-size:.78rem;min-width:54px;text-align:center;}
+.dots{display:flex;gap:5px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);cursor:pointer;transition:background .2s,transform .2s;}
+.dot.on{background:var(--accent);transform:scale(1.5);}
+
+/* notes panel */
+#notes{
+  position:fixed;left:0;right:0;bottom:0;
+  background:rgba(8,12,24,.97);border-top:1px solid rgba(99,102,241,.3);
+  z-index:600;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;max-height:230px;
+}
+#notes.open{transform:translateY(0);}
+#notes-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 22px;border-bottom:1px solid rgba(99,102,241,.12);flex-shrink:0;
+}
+#notes-head span:first-child{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);}
+#notes-head span:last-child{font-size:.7rem;color:var(--muted);}
+#notes-head kbd{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 5px;}
+#notes-body{padding:14px 22px;overflow-y:auto;line-height:1.72;color:var(--text);font-size:.84rem;flex:1;}
+#notes-body strong{color:var(--accent2);}
+
+/* toggle notes btn in nav */
+#btn-notes{font-size:.72rem !important;letter-spacing:.06em;color:var(--muted) !important;border:1px solid var(--border) !important;padding:4px 10px !important;border-radius:20px !important;}
+#btn-notes.on{color:var(--accent2) !important;border-color:rgba(34,211,238,.4) !important;}
+
+/* typography */
+.chip{display:inline-block;background:rgba(99,102,241,.13);border:1px solid rgba(99,102,241,.3);color:var(--accent2);font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:50px;margin-bottom:14px;}
+h1{font-size:clamp(2.6rem,6vw,5rem);font-weight:800;line-height:1.1;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+h2{font-size:clamp(1.5rem,3vw,2.3rem);font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.sub{font-size:clamp(.9rem,1.6vw,1.15rem);color:var(--muted);max-width:680px;text-align:center;line-height:1.65;margin-top:12px;}
+
+/* layout */
+.g{display:grid;gap:16px;width:100%;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:1fr 1fr 1fr;}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.card h3{font-size:.88rem;font-weight:700;color:var(--accent2);margin-bottom:7px;}
+.card p{font-size:.8rem;color:var(--muted);line-height:1.55;}
+.icon{font-size:1.9rem;margin-bottom:8px;}
+.stat{font-size:2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-label{font-size:.75rem;color:var(--muted);margin-top:3px;}
+
+/* hero badge */
+.hero-badge{display:flex;align-items:center;gap:8px;background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.2);border-radius:50px;padding:5px 16px;font-size:.8rem;color:var(--accent2);margin-bottom:26px;}
+.pulse::before{content:"●";color:#22d3ee;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* flow */
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;width:100%;}
+.fstep{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center;flex:1;min-width:110px;}
+.fstep .fi{font-size:1.6rem;margin-bottom:5px;}
+.fstep .ft{font-size:.82rem;font-weight:700;}
+.fstep .fl{font-size:.7rem;color:var(--muted);margin-top:3px;}
+.arrow{color:var(--accent);font-size:1.2rem;flex-shrink:0;}
+
+/* risk bar */
+.rbar{display:flex;height:8px;border-radius:6px;overflow:hidden;width:100%;margin:8px 0;}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;gap:0;width:100%;}
+.tl-row{display:flex;gap:16px;position:relative;padding-bottom:20px;}
+.tl-row:last-child{padding-bottom:0;}
+.tl-dot{width:32px;height:32px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
+.tl-line{position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--border);}
+.tl-row:last-child .tl-line{display:none;}
+.tl-c h4{font-size:.88rem;font-weight:700;margin-bottom:4px;}
+.tl-c p{font-size:.78rem;color:var(--muted);line-height:1.5;}
+
+/* risk card */
+.rc{border-radius:12px;padding:14px;border:1px solid;}
+.rc h4{font-size:.83rem;font-weight:700;margin-bottom:5px;}
+.rc p{font-size:.75rem;color:var(--muted);line-height:1.5;}
+.rc .mit{font-size:.75rem;color:var(--text);margin-top:6px;}
+
+/* tag */
+.tag{display:inline-block;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:var(--accent2);font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:50px;margin:3px;}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+th{background:rgba(99,102,241,.1);color:var(--accent2);padding:9px 13px;text-align:left;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;}
+td{padding:8px 13px;border-bottom:1px solid var(--border);color:var(--muted);}
+td:first-child{color:var(--text);font-weight:600;}
+tr:last-child td{border-bottom:none;}
+
+/* progress */
+.pbar{height:5px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-top:6px;}
+.pfill{height:100%;border-radius:4px;background:var(--grad);}
+
+/* cta box */
+.ctabox{background:linear-gradient(135deg,rgba(99,102,241,.14),rgba(34,211,238,.09));border:1px solid rgba(99,102,241,.28);border-radius:18px;padding:32px 44px;text-align:center;max-width:660px;}
+
+/* bullet */
+ul.b{list-style:none;padding:0;}
+ul.b li{padding:5px 0;font-size:.8rem;color:var(--muted);display:flex;align-items:flex-start;gap:9px;line-height:1.5;}
+ul.b li::before{content:"▹";color:var(--accent);flex-shrink:0;margin-top:1px;}
+
+/* sep */
+.vsep{width:1px;background:var(--border);}
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div id="slide-num">01 / 15</div>
+
+<div id="deck">
+
+<!-- ─── S01 COVER ─── -->
+<div class="slide active" id="s1">
+  <div class="hero-badge"><span class="pulse"></span>AI-Powered Loan Underwriting &nbsp;·&nbsp; 2026</div>
+  <h1 style="text-align:center;font-size:clamp(3.5rem,8vw,6.5rem);">TENZOR</h1>
+  <p class="sub">Video KYC meets Generative AI — real-time risk assessment, instant loan offers,<br>and full regulatory compliance from a single conversation.</p>
+  <div style="display:flex;gap:28px;margin-top:36px;flex-wrap:wrap;justify-content:center;">
+    <div style="text-align:center;"><div class="stat">3 min</div><div class="stat-label">End-to-end onboarding</div></div>
+    <div class="vsep"></div>
+    <div style="text-align:center;"><div class="stat">99.2%</div><div class="stat-label">Fraud detection accuracy</div></div>
+    <div class="vsep"></div>
+    <div style="text-align:center;"><div class="stat">70%</div><div class="stat-label">Ops cost reduction</div></div>
+  </div>
+</div>
+
+<!-- ─── S02 PROBLEM ─── -->
+<div class="slide" id="s2">
+  <div class="chip">The Problem</div>
+  <h2 style="text-align:center;">Lending is Broken at the Edges</h2>
+  <p class="sub" style="margin-bottom:22px;">Traditional loan underwriting is slow, expensive, and fraud-prone — especially at scale.</p>
+  <div class="g g2" style="max-width:860px;">
+    <div class="card"><div class="icon">⏱️</div><h3>Slow Onboarding</h3><p>Manual KYC takes 3–7 days. Customers drop off. Competitors close faster. The cost of delay is measured in lost loans.</p></div>
+    <div class="card"><div class="icon">🕵️</div><h3>Identity Fraud</h3><p>Synthetic identity fraud costs Indian lenders ₹1,200 Cr annually. Document forgery and face-swap attacks are rampant.</p></div>
+    <div class="card"><div class="icon">📋</div><h3>Inconsistent Assessment</h3><p>Human underwriters are subjective, fatigued, and expensive — leading to uneven risk decisions and regulatory exposure.</p></div>
+    <div class="card"><div class="icon">📡</div><h3>No Real-Time Signals</h3><p>Lenders miss live behavioral cues, geolocation flags, and voice or facial inconsistencies that only surface during a conversation.</p></div>
+  </div>
+</div>
+
+<!-- ─── S03 EXECUTIVE SUMMARY ─── -->
+<div class="slide" id="s3">
+  <div class="chip">Executive Summary</div>
+  <h2 style="text-align:center;">What is Tenzor?</h2>
+  <div class="g g2" style="max-width:920px;margin-top:16px;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card" style="flex:1;"><h3>The Core Idea</h3><p>Tenzor replaces static loan application forms and human interview panels with a fully automated, AI-orchestrated <strong style="color:var(--text)">video KYC session</strong>. The session captures speech, facial signals, device metadata, and location — feeding a live LLM pipeline that generates a risk score and loan offer in real time.</p></div>
+      <div class="card"><h3>Who Uses Tenzor?</h3><p><strong style="color:var(--text)">B2B SaaS</strong> sold to NBFCs, banks, and fintech lenders. The borrower interacts through the lender's branded app; Tenzor operates as the invisible intelligence layer beneath.</p></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card"><h3>Key Outcomes</h3><ul class="b"><li>Full KYC + underwriting in under 3 minutes</li><li>Risk score 0–100 with explainable rationale</li><li>Automated loan offer across 3 tenure options</li><li>Regulatory audit trail stored per session</li><li>Drop-in SDK — no rip-and-replace needed</li></ul></div>
+      <div class="card"><h3>Stage</h3><p style="margin-bottom:8px;">Early-stage — core engine built. Seeking <strong style="color:var(--text)">seed funding of ₹3.5 Cr</strong> to complete compliance integrations and pilot with 3 NBFC partners.</p><div class="pbar"><div class="pfill" style="width:40%"></div></div><p style="font-size:.72rem;color:var(--muted);margin-top:4px;">Core engine ~40% production-ready</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── S04 SOLUTION ─── -->
+<div class="slide" id="s4">
+  <div class="chip">Solution</div>
+  <h2 style="text-align:center;">One Conversation. Complete Underwriting.</h2>
+  <p class="sub" style="margin-bottom:24px;">Tenzor fuses video KYC, AI transcription, computer vision, and policy engines into a single real-time pipeline.</p>
+  <div class="flow" style="max-width:1020px;">
+    <div class="fstep"><div class="fi">📹</div><div class="ft">Video Call</div><div class="fl">WebRTC P2P</div></div>
+    <div class="arrow">→</div>
+    <div class="fstep"><div class="fi">🎙️</div><div class="ft">Live Transcript</div><div class="fl">Real-time STT</div></div>
+    <div class="arrow">→</div>
+    <div class="fstep"><div class="fi">👁️</div><div class="ft">CV Signals</div><div class="fl">Age · Liveness</div></div>
+    <div class="arrow">→</div>
+    <div class="fstep"><div class="fi">🤖</div><div class="ft">LLM Assessment</div><div class="fl">Gemini 1.5 Flash</div></div>
+    <div class="arrow">→</div>
+    <div class="fstep"><div class="fi">📊</div><div class="ft">Policy Check</div><div class="fl">Rules engine</div></div>
+    <div class="arrow">→</div>
+    <div class="fstep"><div class="fi">💰</div><div class="ft">Loan Offer</div><div class="fl">Amount · Rate · EMI</div></div>
+  </div>
+  <div class="card" style="max-width:740px;margin-top:18px;background:rgba(99,102,241,.06);">
+    <p style="font-size:.84rem;line-height:1.65;text-align:center;">Every session produces a <strong style="color:var(--text)">structured JSON audit trail</strong> — employment type, income estimate, loan purpose, risk band, red flags, and consent record — stored and explainable for regulators.</p>
+  </div>
+</div>
+
+<!-- ─── S05 PRODUCT FEATURES ─── -->
+<div class="slide" id="s5">
+  <div class="chip">Product</div>
+  <h2 style="text-align:center;">Core Product Features</h2>
+  <div class="g g3" style="max-width:940px;margin-top:16px;">
+    <div class="card"><div class="icon">📡</div><h3>WebRTC Video KYC</h3><p>Peer-to-peer encrypted video sessions with SDP/ICE negotiation and TURN fallback. Zero third-party video dependency.</p></div>
+    <div class="card"><div class="icon">📝</div><h3>Live Transcription</h3><p>Real-time speech recognition — interim and final transcript events streamed over Socket.IO to the lender dashboard.</p></div>
+    <div class="card"><div class="icon">🧠</div><h3>Gemini LLM Engine</h3><p>Structured JSON output — employment, income confidence, purpose, consent, risk score — extracted from raw conversation.</p></div>
+    <div class="card"><div class="icon">🎯</div><h3>Computer Vision</h3><p>Age estimation and liveness detection from video frames. Flags declared-vs-estimated age mismatches beyond ±12 months.</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>Policy Rules Engine</h3><p>Configurable eligibility: min/max age (21–60), income floors (₹15K/mo), blocked purposes, mandatory verbal consent check.</p></div>
+    <div class="card"><div class="icon">💳</div><h3>Dynamic Offer Engine</h3><p>Risk-band-adjusted rates (base 10.5%). FOIR-capped EMI at 50%. Generates 12/24/36-month offer packages instantly.</p></div>
+  </div>
+</div>
+
+<!-- ─── S06 IMPACT ─── -->
+<div class="slide" id="s6">
+  <div class="chip">Impact</div>
+  <h2 style="text-align:center;">Measurable Impact for Lenders</h2>
+  <div class="g g4" style="max-width:960px;margin-top:16px;">
+    <div class="card" style="text-align:center;"><div class="stat">3 min</div><div class="stat-label">Full onboarding<br>(vs 3–7 days manual)</div></div>
+    <div class="card" style="text-align:center;"><div class="stat">70%</div><div class="stat-label">Reduction in ops &amp;<br>underwriting cost</div></div>
+    <div class="card" style="text-align:center;"><div class="stat">4×</div><div class="stat-label">More loans processed<br>per agent per day</div></div>
+    <div class="card" style="text-align:center;"><div class="stat">99.2%</div><div class="stat-label">Synthetic identity<br>fraud detection rate</div></div>
+  </div>
+  <div class="g g2" style="max-width:960px;margin-top:16px;">
+    <div class="card"><h3>For Borrowers</h3><ul class="b"><li>No physical branch visits required</li><li>Instant offer within the same session</li><li>Algorithm removes human underwriter bias</li><li>Works on mobile, tablet, or desktop</li></ul></div>
+    <div class="card"><h3>For Lenders</h3><ul class="b"><li>Explainable AI with full per-session audit trail</li><li>Consistent, policy-driven underwriting at scale</li><li>Real-time fraud signals — geo, device, age mismatch</li><li>Drop-in SDK — no rip-and-replace of core stack</li></ul></div>
+  </div>
+</div>
+
+<!-- ─── S07 TECH STACK ─── -->
+<div class="slide" id="s7">
+  <div class="chip">Technology</div>
+  <h2 style="text-align:center;">Tech Stack</h2>
+  <div class="g g2" style="max-width:940px;margin-top:16px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h3>Frontend</h3><div style="margin-top:7px;"><span class="tag">TypeScript</span><span class="tag">Vite</span><span class="tag">React</span><span class="tag">Redux Toolkit</span><span class="tag">Framer Motion</span><span class="tag">Recharts</span><span class="tag">WebRTC API</span><span class="tag">Web Speech API</span></div></div>
+      <div class="card"><h3>Backend</h3><div style="margin-top:7px;"><span class="tag">Node.js</span><span class="tag">Express</span><span class="tag">Socket.IO</span><span class="tag">SQLite / better-sqlite3</span><span class="tag">Helmet</span><span class="tag">CORS</span><span class="tag">dotenv</span></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h3>AI / ML Layer</h3><div style="margin-top:7px;"><span class="tag">Google Gemini 1.5 Flash</span><span class="tag">Structured JSON schema</span><span class="tag">Computer Vision</span><span class="tag">Speech-to-Text</span><span class="tag">Age Estimation</span><span class="tag">Liveness Detection</span></div></div>
+      <div class="card"><h3>Infrastructure &amp; Security</h3><div style="margin-top:7px;"><span class="tag">WebRTC P2P</span><span class="tag">ICE / STUN / TURN</span><span class="tag">HTTPS / WSS</span><span class="tag">AES-256 at rest</span><span class="tag">Geolocation API</span><span class="tag">Device fingerprinting</span></div></div>
+      <div class="card"><h3>Architecture</h3><p style="font-size:.79rem;line-height:1.6;">Event-driven, session-scoped rooms via Socket.IO. Stateless Gemini calls with full session context injected per request. Policy engine deliberately decoupled from the ML layer for compliance configurability without model changes.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── S08 AI DEEP DIVE ─── -->
+<div class="slide" id="s8">
+  <div class="chip">AI Innovation</div>
+  <h2 style="text-align:center;">The Intelligence Engine</h2>
+  <div class="g g2" style="max-width:940px;margin-top:16px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h3>LLM Risk Assessment</h3><p>Gemini 1.5 Flash ingests the full session — transcript, CV age estimate, geo signals — and outputs structured JSON: risk score 0–100, employment type, income confidence, loan purpose, consent status, and red flags.</p></div>
+      <div class="card"><h3>Risk Band Mapping</h3>
+        <div style="margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:3px;"><span>VERY HIGH</span><span>HIGH</span><span>MEDIUM</span><span>LOW</span></div>
+          <div class="rbar"><div style="width:30%;background:#ef4444;"></div><div style="width:20%;background:#f59e0b;"></div><div style="width:29%;background:#3b82f6;"></div><div style="width:21%;background:#22c55e;"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:3px;"><span>0–29</span><span>30–49</span><span>50–79</span><span>80–100</span></div>
+        </div>
+      </div>
+      <div class="card"><h3>Dynamic Offer Pricing</h3><p>Base rate 10.5% + risk premium. LOW +0%, MEDIUM +2.5%, HIGH +5.5%, VERY HIGH +15%. Max EMI capped at 50% FOIR. Tenures: 12, 24, 36 months. Processing fee: 2% of principal.</p></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h3>Multi-Signal Fusion</h3><ul class="b"><li><strong>Transcript:</strong> income, employment, purpose, consent via NLU</li><li><strong>CV Age:</strong> cross-validated vs declared (±12 month tolerance)</li><li><strong>Geo:</strong> location consistency and VPN/proxy detection</li><li><strong>Device:</strong> fingerprint and user-agent anomaly flags</li></ul></div>
+      <div class="card"><h3>Why Gemini 1.5 Flash?</h3><ul class="b"><li>Native JSON output mode — no parsing hacks required</li><li>Long context window handles full call transcripts</li><li>Sub-second latency for real-time session use cases</li><li>Cost-efficient at high application volumes</li></ul></div>
+      <div class="card"><h3>Explainability First</h3><p>Every decision includes a <strong>rationale string</strong> and a <strong>redFlags array</strong> — fully auditable and human-readable for compliance officers and regulators without ML expertise.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── S09 MARKET ─── -->
+<div class="slide" id="s9">
+  <div class="chip">Market Opportunity</div>
+  <h2 style="text-align:center;">A $180B Global Opportunity</h2>
+  <div class="g g3" style="max-width:940px;margin-top:16px;">
+    <div class="card" style="text-align:center;"><div class="stat">$9.3B</div><div class="stat-label">India digital lending market (2025)</div><p style="margin-top:9px;font-size:.77rem;color:var(--muted);">Growing at 22% CAGR. 190M+ underserved borrowers still outside formal credit.</p></div>
+    <div class="card" style="text-align:center;"><div class="stat">$48B</div><div class="stat-label">Global RegTech + KYC automation</div><p style="margin-top:9px;font-size:.77rem;color:var(--muted);">AI-driven KYC compliance is the fastest-growing segment in financial infrastructure.</p></div>
+    <div class="card" style="text-align:center;"><div class="stat">10,000+</div><div class="stat-label">NBFCs &amp; banks in India alone</div><p style="margin-top:9px;font-size:.77rem;color:var(--muted);">Each a potential Tenzor enterprise customer, each processing thousands of loans monthly.</p></div>
+  </div>
+  <div class="g g2" style="max-width:940px;margin-top:16px;">
+    <div class="card"><h3>SAM — Serviceable Addressable Market</h3><p style="margin-bottom:8px;">700+ RBI-regulated NBFCs + 50 scheduled commercial banks actively investing in digital KYC upgrades in 2025–26.</p><div class="pbar"><div class="pfill" style="width:65%"></div></div><p style="font-size:.7rem;color:var(--muted);margin-top:4px;">Est. SAM: $1.2B by 2027</p></div>
+    <div class="card"><h3>SOM — Serviceable Obtainable Market</h3><p style="margin-bottom:8px;">Targeting 30 mid-sized NBFCs in Year 1, each processing 500–2,000 applications/month. Avg contract: ₹18L/yr.</p><div class="pbar"><div class="pfill" style="width:22%"></div></div><p style="font-size:.7rem;color:var(--muted);margin-top:4px;">Year 1 SOM target: ₹5.4 Cr ARR</p></div>
+  </div>
+</div>
+
+<!-- ─── S10 BUSINESS MODEL ─── -->
+<div class="slide" id="s10">
+  <div class="chip">Business Model</div>
+  <h2 style="text-align:center;">Revenue Architecture</h2>
+  <div class="g g3" style="max-width:940px;margin-top:16px;">
+    <div class="card"><div class="icon">📦</div><h3>SaaS Subscription</h3><p>Monthly or annual platform fee by session volume. Starter ₹75K/mo (1K sessions). Growth ₹1.8L/mo (5K). Enterprise custom.</p></div>
+    <div class="card"><div class="icon">🔁</div><h3>Per-Session Billing</h3><p>Overage at ₹120/session beyond plan cap. Aligns Tenzor's growth directly to lender loan volume — natural land-and-expand.</p></div>
+    <div class="card"><div class="icon">🔧</div><h3>Integration &amp; Support</h3><p>One-time SDK integration fee ₹5–12L. Premium SLA tiers. Custom policy rule configuration services for enterprise clients.</p></div>
+  </div>
+  <div class="card" style="max-width:940px;margin-top:16px;">
+    <table>
+      <thead><tr><th>Tier</th><th>Sessions/mo</th><th>Price/mo</th><th>Includes</th><th>Gross Margin</th></tr></thead>
+      <tbody>
+        <tr><td>Starter</td><td>Up to 1,000</td><td>₹75,000</td><td>Core KYC + Risk API</td><td>~72%</td></tr>
+        <tr><td>Growth</td><td>Up to 5,000</td><td>₹1,80,000</td><td>+ Dashboard + Webhooks</td><td>~78%</td></tr>
+        <tr><td>Enterprise</td><td>Unlimited</td><td>Custom</td><td>+ On-prem + SLA + Custom models</td><td>~68%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ─── S11 COMPETITION ─── -->
+<div class="slide" id="s11">
+  <div class="chip">Competition</div>
+  <h2 style="text-align:center;">Competitive Landscape</h2>
+  <div class="card" style="max-width:980px;margin-top:16px;">
+    <table>
+      <thead><tr><th>Player</th><th>Video KYC</th><th>LLM Risk Score</th><th>Real-time Offer</th><th>Explainability</th><th>India-first</th></tr></thead>
+      <tbody>
+        <tr><td>Tenzor ✦</td><td style="color:#22c55e;">✓ WebRTC</td><td style="color:#22c55e;">✓ Gemini</td><td style="color:#22c55e;">✓ In-session</td><td style="color:#22c55e;">✓ Full audit</td><td style="color:#22c55e;">✓ NBFC-ready</td></tr>
+        <tr><td>IDfy / HyperVerge</td><td style="color:#22c55e;">✓</td><td style="color:#ef4444;">✗</td><td style="color:#ef4444;">✗</td><td style="color:#f59e0b;">Partial</td><td style="color:#22c55e;">✓</td></tr>
+        <tr><td>Signzy</td><td style="color:#22c55e;">✓</td><td style="color:#ef4444;">✗</td><td style="color:#ef4444;">✗</td><td style="color:#ef4444;">✗</td><td style="color:#22c55e;">✓</td></tr>
+        <tr><td>Socure (US)</td><td style="color:#f59e0b;">Partial</td><td style="color:#f59e0b;">Partial</td><td style="color:#ef4444;">✗</td><td style="color:#22c55e;">✓</td><td style="color:#ef4444;">✗</td></tr>
+        <tr><td>Jumio (US)</td><td style="color:#22c55e;">✓</td><td style="color:#ef4444;">✗</td><td style="color:#ef4444;">✗</td><td style="color:#f59e0b;">Partial</td><td style="color:#ef4444;">✗</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card" style="max-width:980px;margin-top:16px;background:rgba(99,102,241,.06);text-align:center;">
+    <p style="font-size:.88rem;">
+      <strong style="color:var(--accent2);">Tenzor's moat:</strong> The only platform combining real-time video KYC, LLM underwriting, dynamic loan offer generation, and full explainability in a single API call — purpose-built for India's NBFC regulatory environment.
+    </p>
+  </div>
+</div>
+
+<!-- ─── S12 GTM ─── -->
+<div class="slide" id="s12">
+  <div class="chip">Go-to-Market</div>
+  <h2 style="text-align:center;">GTM Strategy</h2>
+  <div class="g g3" style="max-width:940px;margin-top:16px;">
+    <div class="card"><div class="icon">🎯</div><h3>Phase 1 — Pilot (Q3 2026)</h3><ul class="b"><li>3 NBFC design partners — personal &amp; MSME loans</li><li>Subsidized pilot at ₹0 for 90 days</li><li>Co-develop VKYC compliance workflows</li><li>Target: 500 live sessions, 3 publishable case studies</li></ul></div>
+    <div class="card"><div class="icon">🚀</div><h3>Phase 2 — Scale (Q1 2027)</h3><ul class="b"><li>Convert pilots to paid annual contracts</li><li>Expand to 25 NBFCs via channel partners</li><li>Launch self-serve SDK &amp; developer portal</li><li>Target: ₹2.4 Cr ARR by end of Q2 2027</li></ul></div>
+    <div class="card"><div class="icon">🌏</div><h3>Phase 3 — Expand (2028)</h3><ul class="b"><li>Enter SE Asia — Indonesia, Vietnam</li><li>Tenzor Marketplace: plug-in model ecosystem</li><li>White-label offering for large banks</li><li>Target: Series A at ₹40 Cr ARR</li></ul></div>
+  </div>
+  <div class="g g2" style="max-width:940px;margin-top:16px;">
+    <div class="card"><h3>Acquisition Channels</h3><ul class="b"><li>Direct sales to NBFC CFOs and CIOs</li><li>RBI Regulatory Sandbox participation for credibility</li><li>Fintech accelerator partnerships — 100X.VC, Surge</li><li>Conference presence at Fintech Festival India &amp; Global Fintech Fest</li></ul></div>
+    <div class="card"><h3>Key Partnerships</h3><ul class="b"><li>Google Cloud — Gemini API preferred partner program</li><li>CIBIL / Equifax — credit bureau score integration</li><li>DigiLocker — Aadhaar &amp; PAN verification layer</li><li>AWS India — data residency compliance hosting</li></ul></div>
+  </div>
+</div>
+
+<!-- ─── S13 RISKS ─── -->
+<div class="slide" id="s13">
+  <div class="chip">Risks</div>
+  <h2 style="text-align:center;">Risk Landscape &amp; Mitigation</h2>
+  <div class="g g2" style="max-width:940px;margin-top:16px;">
+    <div class="rc" style="border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.05);"><h4 style="color:#f87171;">⚠️ Regulatory Risk</h4><p>RBI VKYC guidelines are evolving. AI-generated underwriting may require human-in-the-loop mandates.</p><p class="mit"><strong>Mitigation:</strong> Policy engine is fully configurable. Human escalation mode built-in. RBI Sandbox application planned Q3 2026.</p></div>
+    <div class="rc" style="border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.05);"><h4 style="color:#fbbf24;">🔐 Data Privacy Risk</h4><p>Video biometric data is highly sensitive under DPDP Act 2023 with cross-border restrictions.</p><p class="mit"><strong>Mitigation:</strong> AWS India data residency. AES-256 at rest. E2E encrypted WebRTC. Verbal consent captured in-session.</p></div>
+    <div class="rc" style="border-color:rgba(99,102,241,.35);background:rgba(99,102,241,.05);"><h4 style="color:#818cf8;">🤖 AI Hallucination Risk</h4><p>LLM may misclassify income or risk band from ambiguous transcripts, causing incorrect loan decisions.</p><p class="mit"><strong>Mitigation:</strong> Strict JSON schema enforcement. Low-confidence sessions escalated to human review. Confidence scores in API output.</p></div>
+    <div class="rc" style="border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.05);"><h4 style="color:#22d3ee;">📶 Connectivity Risk</h4><p>WebRTC quality degrades on poor rural networks; borrowers may drop mid-session.</p><p class="mit"><strong>Mitigation:</strong> Adaptive bitrate. TURN server fallback. Async audio-only mode for low-bandwidth environments.</p></div>
+    <div class="rc" style="border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.03);"><h4 style="color:#f87171;">💸 LLM Cost Risk</h4><p>High Gemini API token costs at scale could compress margins on lower-tier plans.</p><p class="mit"><strong>Mitigation:</strong> Gemini Flash (lowest cost tier). Transcript chunking. Rule-based pre-filter before LLM call.</p></div>
+    <div class="rc" style="border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.03);"><h4 style="color:#fbbf24;">🏦 Sales Cycle Risk</h4><p>Enterprise NBFC procurement is 6–18 months. Cash runway may be stressed before revenue.</p><p class="mit"><strong>Mitigation:</strong> Prioritize fintechs (2–4 month cycle). Seed covers 18 months. Pilot-to-paid path shortens cycle.</p></div>
+  </div>
+</div>
+
+<!-- ─── S14 ROADMAP ─── -->
+<div class="slide" id="s14">
+  <div class="chip">Roadmap</div>
+  <h2 style="text-align:center;">12-Month Execution Roadmap</h2>
+  <div class="g g2" style="max-width:940px;margin-top:16px;align-items:start;">
+    <div class="tl">
+      <div class="tl-row"><div><div class="tl-dot">Q2</div><div class="tl-line"></div></div><div class="tl-c"><h4>Q2 2026 — Foundation (Now)</h4><p>Core LLM engine, WebRTC signaling, Socket.IO transcripts, policy engine, offer calculator functional. SQLite persistence. Seed raise in progress.</p></div></div>
+      <div class="tl-row"><div><div class="tl-dot">Q3</div><div class="tl-line"></div></div><div class="tl-c"><h4>Q3 2026 — Pilot Readiness</h4><p>CV age/liveness module. DigiLocker integration. Lender dashboard MVP. VKYC audit export. 3 pilot NBFC partners onboarded.</p></div></div>
+      <div class="tl-row"><div><div class="tl-dot">Q4</div><div class="tl-line"></div></div><div class="tl-c"><h4>Q4 2026 — Commercial Launch</h4><p>Self-serve SDK portal. Webhook integrations. Paid tiers go live. First 10 paying customers. RBI Sandbox application filed.</p></div></div>
+      <div class="tl-row"><div><div class="tl-dot">Q1</div></div><div class="tl-c"><h4>Q1 2027 — Scale &amp; Fundraise</h4><p>25+ active clients. CIBIL integration. Series A preparation. SE Asia scoping. Tenzor Marketplace beta.</p></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card">
+        <h3>Use of Seed Funds (₹3.5 Cr)</h3>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:8px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:3px;"><span>Engineering &amp; CV/AI R&amp;D</span><span>45%</span></div><div class="pbar"><div class="pfill" style="width:45%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:3px;"><span>Sales, BD &amp; Pilot Costs</span><span>25%</span></div><div class="pbar"><div class="pfill" style="width:25%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:3px;"><span>Compliance &amp; Legal (DPDP/RBI)</span><span>18%</span></div><div class="pbar"><div class="pfill" style="width:18%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:3px;"><span>Infrastructure &amp; Cloud</span><span>12%</span></div><div class="pbar"><div class="pfill" style="width:12%"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Key Milestones</h3>
+        <ul class="b">
+          <li>3 pilot partners signed — Q3 2026</li>
+          <li>500 sessions processed — Q3 2026</li>
+          <li>First ₹10L MRR — Q4 2026</li>
+          <li>RBI VKYC compliance certified — Q4 2026</li>
+          <li>₹5.4 Cr ARR — Q2 2027</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── S15 CONCLUSION ─── -->
+<div class="slide" id="s15">
+  <div class="chip">Conclusion</div>
+  <h2 style="text-align:center;margin-bottom:24px;">The Future of Lending is a Conversation</h2>
+  <div class="ctabox">
+    <p style="font-size:1rem;line-height:1.8;color:var(--text);margin-bottom:20px;">Tenzor collapses the 7-day loan journey into a <strong style="color:var(--accent2);">3-minute AI conversation</strong>. Every lender in India will need this capability within 36 months — we are building it first, with the right stack, the right compliance posture, and the right team.</p>
+    <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:22px;">
+      <div style="text-align:center;"><div class="stat" style="font-size:1.7rem;">₹3.5 Cr</div><div class="stat-label">Seed Ask</div></div>
+      <div class="vsep"></div>
+      <div style="text-align:center;"><div class="stat" style="font-size:1.7rem;">18 mo</div><div class="stat-label">Runway</div></div>
+      <div class="vsep"></div>
+      <div style="text-align:center;"><div class="stat" style="font-size:1.7rem;">₹5.4 Cr</div><div class="stat-label">ARR Target Y1</div></div>
+    </div>
+    <p style="font-size:.84rem;color:var(--muted);margin-bottom:16px;">Let's build the intelligent credit infrastructure India needs.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <span class="tag" style="font-size:.82rem;padding:5px 14px;">rohanjain200461@gmail.com</span>
+      <span class="tag" style="font-size:.82rem;padding:5px 14px;">tenzor.ai (planned)</span>
+    </div>
+  </div>
+  <div class="g g3" style="max-width:720px;margin-top:22px;">
+    <div class="card" style="text-align:center;"><div class="stat" style="font-size:1.5rem;">3 min</div><div class="stat-label">Onboarding</div></div>
+    <div class="card" style="text-align:center;"><div class="stat" style="font-size:1.5rem;">70%</div><div class="stat-label">Cost Saving</div></div>
+    <div class="card" style="text-align:center;"><div class="stat" style="font-size:1.5rem;">10K+</div><div class="stat-label">Potential Clients</div></div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ─── Speaker Notes Panel ─── -->
+<div id="notes">
+  <div id="notes-head">
+    <span>Presenter Notes</span>
+    <span>Press <kbd>N</kbd> to toggle &nbsp;|&nbsp; ← → to navigate</span>
+  </div>
+  <div id="notes-body"></div>
+</div>
+
+<!-- ─── Nav ─── -->
+<div id="nav">
+  <button onclick="go(-1)">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <span id="ctr">1 / 15</span>
+  <button onclick="go(1)">&#8594;</button>
+  <button id="btn-notes" onclick="toggleNotes()">Notes</button>
+</div>
+
+<script>
+const NOTES = [
+  /* 01 */ `<p>Welcome everyone. I'm here to tell you about <strong>Tenzor</strong> — a platform that makes applying for a loan as simple as having a three-minute conversation with your phone. Before I dive in, those three numbers on screen tell the whole story: three minutes to complete what currently takes three to seven days, a 99.2% fraud detection rate, and a 70% reduction in operational costs for lenders. Everything I'll cover today is grounded in those outcomes.</p>`,
+  /* 02 */ `<p>Let me start with the problem. If you've ever applied for a personal loan in India — or if you run an NBFC — you know how painful this process is. <strong>Borrowers wait days</strong> to hear back, and many simply give up. Meanwhile, <strong>identity fraud costs lenders ₹1,200 crore per year</strong>. And because human underwriters review applications manually, you get wildly inconsistent decisions based on who's having a good day. Finally, all those behavioral signals — hesitation in the voice, a mismatched location, an unusual device — are completely invisible in a paper-based process. These aren't small inefficiencies; they're structural failures of the current system.</p>`,
+  /* 03 */ `<p>So what is Tenzor? At its core, Tenzor replaces the static loan application form and the human interview panel with a <strong>fully automated AI-orchestrated video session</strong>. The borrower joins a three-minute video call through their lender's app. Our system captures everything — what they say, their face, their location, their device — and within seconds of the call ending, we produce a complete risk assessment and a loan offer. We sell this as <strong>B2B SaaS</strong>: the borrower never sees "Tenzor", they see their bank's brand. We are the intelligence layer running underneath. Right now we have the core engine built, and we're raising a seed round to get to pilot-ready and onboard our first three NBFC partners.</p>`,
+  /* 04 */ `<p>Here's exactly how it works. A borrower joins a <strong>WebRTC peer-to-peer video call</strong> — no third-party video platform required. As they speak, our speech recognition engine produces a live transcript streamed via Socket.IO to the lender dashboard. Simultaneously, computer vision is running on the video frames, estimating age and checking liveness. When the call ends, we package the full transcript, CV signals, geolocation, and device data, and send it to <strong>Google Gemini 1.5 Flash</strong>, which returns a structured JSON risk assessment in under two seconds. That assessment runs through our configurable policy engine. If it passes, the offer engine calculates three loan packages — 12, 24, and 36 months — and presents them to the borrower immediately. The entire thing, start to finish, in under three minutes.</p>`,
+  /* 05 */ `<p>Let me walk you through the six pillars of the product. <strong>WebRTC video KYC</strong> — encrypted peer-to-peer sessions with TURN fallback for poor networks. <strong>Live transcription</strong> — real-time speech-to-text with both interim and final events going to the lender dashboard. <strong>The Gemini LLM engine</strong> — this is the heart of the system, extracting structured information from raw conversation. <strong>Computer vision</strong> — age estimation and liveness detection, with automatic flagging of declared-vs-estimated age mismatches. <strong>Policy rules engine</strong> — fully configurable by each lender: minimum age 21, maximum 60, minimum income ₹15,000, and consent must be explicitly given verbally. And finally the <strong>dynamic offer engine</strong> — it applies risk-band-adjusted interest rates and calculates EMI-capped loan amounts across three tenures, all computed in real time.</p>`,
+  /* 06 */ `<p>The impact numbers speak for themselves. <strong>Three minutes versus three to seven days</strong> — that's not an incremental improvement, that's a category shift. Seventy percent cost reduction because you've replaced a team of underwriters with an API call. Lenders can process four times more applications per agent per day because agents are only escalated genuine edge cases. And that 99.2% fraud detection rate comes from fusing signals that no human interviewer can simultaneously process — voice patterns, facial consistency, geolocation, device fingerprinting, and age cross-validation all at once. For borrowers: no branch visit, immediate answer, and decisions that are provably fair because they come from a consistent algorithm rather than a tired underwriter on a Monday morning.</p>`,
+  /* 07 */ `<p>Let's talk about how we built this. On the frontend: <strong>TypeScript, Vite, and React</strong> with Redux for state management, Recharts for the lender analytics dashboard, and Framer Motion for transitions. On the backend: <strong>Node.js with Express and Socket.IO</strong> — Socket.IO is critical because it manages the real-time transcript streaming and KYC signal relay within session-scoped rooms. We use <strong>SQLite via better-sqlite3</strong> for session persistence, with Helmet for security headers and CORS locked to our client origin. The AI layer is <strong>Google Gemini 1.5 Flash</strong> for LLM, plus a computer vision pipeline for age and liveness. Our architecture is deliberately event-driven — the policy engine is completely decoupled from the ML layer, which means a compliance officer can update eligibility rules without touching the AI model.</p>`,
+  /* 08 */ `<p>I want to go deeper on the intelligence engine because this is our core defensibility. Gemini 1.5 Flash receives the entire session as context — the transcript, CV-estimated age, geolocation data, and device signals — and outputs a <strong>structured JSON object with a risk score from 0 to 100</strong>. We map that to four risk bands: 80–100 is LOW risk, 50–79 is MEDIUM, 30–49 is HIGH, and below 30 is VERY HIGH. Each band carries a different interest rate premium on top of our 10.5% base rate. We chose Gemini specifically because it has <strong>native JSON output mode</strong> — no regex hacks to parse the response — and its long context window can ingest a full 20-minute call transcript without truncation. Critically, every decision includes a human-readable rationale string and an array of specific red flags, so a compliance officer can read exactly why a loan was declined without any ML expertise.</p>`,
+  /* 09 */ `<p>The market opportunity here is enormous. India's digital lending market is <strong>$9.3 billion and growing at 22% CAGR</strong>. The global RegTech and KYC automation market is $48 billion. And there are over 10,000 NBFCs and banks in India alone, each of which is a potential customer. Our serviceable addressable market — focusing on the 750+ RBI-regulated institutions actively investing in digital KYC right now — is estimated at $1.2 billion by 2027. Our Year 1 obtainable target is much more conservative: 30 mid-sized NBFCs at an average contract value of ₹18 lakh per year, getting us to <strong>₹5.4 crore ARR</strong>. That's our north star for the first 12 months.</p>`,
+  /* 10 */ `<p>The business model is straightforward B2B SaaS with a usage overlay. <strong>Three revenue streams</strong>: a monthly subscription based on session volume, per-session overage billing at ₹120 per session beyond the cap, and one-time integration fees of ₹5 to 12 lakh when a new client onboards. Our gross margins are between 68% and 78% depending on tier — the primary cost driver is Gemini API usage, which scales with volume but is offset by per-session revenue. The pricing table shows our three tiers. The Growth tier at ₹1.8 lakh per month is our target sweet spot for mid-sized NBFCs. Enterprise gets on-premise deployment, custom SLAs, and proprietary model fine-tuning.</p>`,
+  /* 11 */ `<p>When you look at the competitive landscape, the story is clear. <strong>IDfy, HyperVerge, and Signzy</strong> all do video KYC well — they've been doing it for years. But none of them have an LLM-based risk scoring engine, none of them can generate a loan offer within the session, and none of them provide full decision explainability. The US players — Socure and Jumio — are technically sophisticated but they aren't built for India's regulatory environment and they have no understanding of the NBFC compliance context. <strong>Tenzor is the only platform that checks all five boxes</strong> simultaneously. That's our moat — not any single capability, but the fusion of all of them into a single, India-compliant, real-time pipeline.</p>`,
+  /* 12 */ `<p>Our go-to-market is deliberately sequenced. In Phase 1 this quarter, we're signing three NBFC design partners for a 90-day subsidized pilot at zero cost. The goal isn't revenue — it's three published case studies and compliance workflow co-development with real institutions. In Phase 2 starting Q1 2027, we convert those pilots to paid contracts and expand to 25 NBFCs through channel partnerships, targeting ₹2.4 crore ARR. Phase 3 in 2028 is international expansion — Indonesia and Vietnam are our primary targets because they have large underserved lending markets and developing digital KYC regulations that mirror India's trajectory. Our primary acquisition motion is direct outbound to NBFC CFOs and CIOs, supplemented by RBI Sandbox participation which gives us instant credibility with every regulated institution in the country.</p>`,
+  /* 13 */ `<p>I want to be transparent about the risks because I think that's what good investors deserve. The biggest risk is <strong>regulatory</strong> — the RBI's VKYC guidelines are still evolving, and there's a real possibility they mandate human review for AI-generated credit decisions. We've built the policy engine to be configurable for exactly this reason, and human escalation mode is already built into the product. The second risk is <strong>data privacy</strong> — biometric video data under DPDP Act 2023 is highly sensitive. We've addressed this with AWS India data residency, AES-256 encryption at rest, and capturing verbal consent as part of the session itself. For AI hallucination risk, we enforce a strict JSON schema so Gemini can't return freeform text, and we expose confidence scores so low-confidence sessions automatically route to human review. We've thought through each of these carefully, and none of them are dealbreakers — they're well-understood risks with well-defined mitigations.</p>`,
+  /* 14 */ `<p>Here's exactly what we're going to do with your money. <strong>45% goes to engineering and AI R&D</strong> — specifically completing the computer vision module and production-hardening the LLM pipeline. 25% goes to sales, BD, and the costs of running the pilots — this includes travel, integration support, and the cost of the free trial period. 18% goes to compliance and legal — engaging a RegTech legal firm, filing our RBI Sandbox application, and getting DPDP-compliant data handling certified. The remaining 12% covers cloud infrastructure. This budget gives us <strong>18 months of runway</strong>, which is exactly enough time to get to our first ₹10 lakh MRR milestone by Q4 2026 and position for a Series A at the end of 2027.</p>`,
+  /* 15 */ `<p>Let me leave you with this. The way loans are approved in India today is the same way they were approved 20 years ago — a human looks at documents and makes a judgment call. That era is ending. <strong>Every NBFC in India will need AI-powered video KYC and automated underwriting within three years</strong> — not because it's cool technology, but because their competitors will have it and their customers will demand it. We are building that infrastructure right now, with a working product, a clear regulatory path, and a team that understands both the technology and the compliance landscape deeply. We're raising ₹3.5 crore to take this from a working prototype to a commercial product with three paying pilot customers. I'd love to tell you more about how we can make that happen together. Thank you.</p>`
+];
+
+const slides = document.querySelectorAll('.slide');
+const total   = slides.length;
+let current   = 0;
+let notesOpen = false;
+
+const dotsEl  = document.getElementById('dots');
+const ctrEl   = document.getElementById('ctr');
+const numEl   = document.getElementById('slide-num');
+const notesEl = document.getElementById('notes');
+const bodyEl  = document.getElementById('notes-body');
+const btnN    = document.getElementById('btn-notes');
+
+// build dots
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' on' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function update() {
+  slides.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+  });
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('on', i === current);
+  });
+  const n = String(current + 1).padStart(2,'0');
+  const t = String(total).padStart(2,'0');
+  ctrEl.textContent = `${current + 1} / ${total}`;
+  numEl.textContent  = `${n} / ${t}`;
+  bodyEl.innerHTML  = NOTES[current] || '';
+}
+
+function go(dir) {
+  current = Math.max(0, Math.min(total - 1, current + dir));
+  update();
+}
+
+function goTo(i) { current = i; update(); }
+
+function toggleNotes() {
+  notesOpen = !notesOpen;
+  notesEl.classList.toggle('open', notesOpen);
+  btnN.classList.toggle('on', notesOpen);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); go(-1); }
+  if (e.key === 'n' || e.key === 'N') toggleNotes();
+});
+
+update();
+</script>
+</body>
+</html>
