@@ -3,7 +3,7 @@ services:
     name: verilend-hackathon
     env: node
     plan: free
-    buildCommand: "cd server && npm install && cd ../client && npm install && npm run build && cd .."
+    buildCommand: "cd server && npm install --legacy-peer-deps && cd ../client && npm install --legacy-peer-deps && npm run build && cd .."
     startCommand: "cd server && node src/index.js"
     envVars:
       - key: NODE_ENV
