@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import * as faceapi from 'face-api.js';
 import { useKYCStore } from '../stores/kycStore';
 
-const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js-models@master';
+const MODEL_URL = '/models';
 
-export default function useFaceDetection(videoRef) {
+export default function useFaceDetection(videoRef, enabled = true) {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [detection, setDetection] = useState(null);
   const { setEstimatedAge } = useKYCStore();
@@ -72,10 +72,10 @@ export default function useFaceDetection(videoRef) {
   }, [modelsLoaded, videoRef, setEstimatedAge]);
 
   useEffect(() => {
-    if (modelsLoaded) {
+    if (modelsLoaded && enabled) {
       requestRef.current = requestAnimationFrame(detectFaces);
     }
-  }, [modelsLoaded, detectFaces]);
+  }, [modelsLoaded, detectFaces, enabled]);
 
   return { modelsLoaded, detection };
 }

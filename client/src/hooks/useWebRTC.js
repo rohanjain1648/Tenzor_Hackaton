@@ -6,8 +6,9 @@ const STUN_SERVER = 'stun:stun.l.google.com:19302';
 export default function useWebRTC(sessionId, role) {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-  const [connectionState, setConnectionState] = useState('disconnected'); // disconnected, connecting, connected
-  
+  const [connectionState, setConnectionState] = useState('disconnected');
+  const [socketConnected, setSocketConnected] = useState(false);
+
   const socketRef = useRef(null);
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -21,15 +22,14 @@ export default function useWebRTC(sessionId, role) {
     
     socketRef.current.on('connect', () => {
       console.log('Socket connected');
+      setSocketConnected(true);
       socketRef.current.emit('join-room', { sessionId, role });
     });
 
     socketRef.current.on('user-joined', async ({ socketId, role: remoteRole }) => {
       console.log(`User joined: ${socketId} as ${remoteRole}`);
-      // If we are the customer, we initiate the call when an agent joins
-      if (role === 'customer') {
-        await createOffer();
-      }
+      // Whoever is already in the room initiates the WebRTC offer
+      await createOffer();
     });
 
     socketRef.current.on('offer', async ({ sdp }) => {
@@ -151,6 +151,7 @@ export default function useWebRTC(sessionId, role) {
       socketRef.current.disconnect();
       socketRef.current = null;
     }
+    setSocketConnected(false);
   };
   
   // Cleanup
@@ -162,9 +163,10 @@ export default function useWebRTC(sessionId, role) {
     localStream,
     remoteStream,
     connectionState,
+    socketConnected,
     initMedia,
     initSocket,
     endCall,
-    socket: socketRef.current
+    socketRef
   };
 }

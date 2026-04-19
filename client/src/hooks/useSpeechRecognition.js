@@ -1,12 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranscriptStore } from '../stores/transcriptStore';
 
-export default function useSpeechRecognition(sessionId, socket, role) {
+export default function useSpeechRecognition(sessionId, socketRef, role) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
   const { addTranscript, setInterimText } = useTranscriptStore();
 
-  const initRecognition = useCallback(() => {
+  // Keep ref in sync with state so onend closure always has current value
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
+
+  useEffect(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       console.warn('Speech recognition not supported in this browser.');
       return;
@@ -14,15 +20,15 @@ export default function useSpeechRecognition(sessionId, socket, role) {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    
+
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-IN'; // Indian English for localization/better parsing
-    
+    recognition.lang = 'en-IN';
+
     recognition.onresult = (event) => {
       let finalTranscript = '';
       let interimTranscript = '';
-      
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
@@ -32,10 +38,7 @@ export default function useSpeechRecognition(sessionId, socket, role) {
         }
       }
 
-      if (interimTranscript) {
-        setInterimText(interimTranscript);
-        // We can emit interim if we want live sync, but it's noisy
-      }
+      if (interimTranscript) setInterimText(interimTranscript);
 
       if (finalTranscript) {
         setInterimText('');
@@ -46,47 +49,41 @@ export default function useSpeechRecognition(sessionId, socket, role) {
           speaker: role
         };
         addTranscript(record);
-        
-        if (socket) {
-          socket.emit('transcript-update', { ...record, sessionId });
+        if (socketRef?.current) {
+          socketRef.current.emit('transcript-update', { ...record, sessionId });
         }
       }
     };
 
     recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        console.error('Speech recognition error', event.error);
+      }
     };
 
     recognition.onend = () => {
-      // Auto-restart if we are supposed to be listening
-      if (isListening) {
-        try {
-          recognition.start();
-        } catch(e) {
-             // already started
-        }
+      if (isListeningRef.current) {
+        setTimeout(() => {
+          try { recognition.start(); } catch (e) { /* already started */ }
+        }, 300);
       }
     };
 
     recognitionRef.current = recognition;
-  }, [addTranscript, setInterimText, socket, sessionId, role, isListening]);
 
-  useEffect(() => {
-    initRecognition();
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
+      recognition.onend = null;
+      recognition.stop();
     };
-  }, [initRecognition]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (recognitionRef.current) {
-      if (isListening) {
-        try { recognitionRef.current.start(); } catch(e) {}
-      } else {
-        recognitionRef.current.stop();
-      }
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    if (isListening) {
+      try { recognition.start(); } catch (e) { /* already started */ }
+    } else {
+      recognition.stop();
     }
   }, [isListening]);
 

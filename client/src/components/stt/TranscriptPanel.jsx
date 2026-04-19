@@ -19,15 +19,18 @@ export default function TranscriptPanel() {
         <h4 style={{ margin: 0 }}>Live Transcript</h4>
       </div>
       
-      <div 
+      <div
         ref={scrollRef}
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          display: 'flex', 
-          flexDirection: 'column', 
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
           gap: '0.75rem',
-          paddingRight: '0.5rem'
+          paddingRight: '0.5rem',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(99,102,241,0.4) transparent',
         }}
       >
         {transcripts.map((t) => (

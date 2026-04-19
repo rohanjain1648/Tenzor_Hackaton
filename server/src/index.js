@@ -10,20 +10,24 @@ const registerSocketHandlers = require('./socket/handlers');
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = process.env.CLIENT_URL
+  ? [process.env.CLIENT_URL]
+  : [/^http:\/\/localhost:\d+$/];
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
   }
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Routes
 app.use('/api/assessments', require('./routes/assessment.routes'));
-// app.use('/api/sessions', require('./routes/session.routes'));
+app.use('/api/sessions', require('./routes/session.routes'));
 // app.use('/api/offers', require('./routes/offer.routes'));
 
 // Healthcheck
