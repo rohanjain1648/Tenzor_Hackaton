@@ -16,13 +16,15 @@ const allowedOrigins = process.env.CLIENT_URL
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: '*',
     methods: ['GET', 'POST']
   }
 });
 
-app.use(helmet());
-app.use(cors({ origin: allowedOrigins }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
+app.use(cors());
 app.use(express.json());
 
 // Routes
@@ -32,6 +34,14 @@ app.use('/api/sessions', require('./routes/session.routes'));
 
 // Healthcheck
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Serve static React files
+app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+// SPA Catch-all
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+});
 
 // Socket.IO
 io.on('connection', (socket) => {

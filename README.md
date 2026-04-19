@@ -1,4 +1,4 @@
-# TenZor — Intelligent Video-Based Loan Origination Platform
+# VeriLend — Intelligent Video-Based Loan Origination Platform
 
 > Real-time KYC, AI risk assessment, and instant loan offers — all inside a single video call.
 
@@ -25,7 +25,7 @@
 
 Traditional loan origination is slow, paper-heavy, and fraud-prone. Customers visit branches, fill forms, and wait days for decisions. Lenders rely on static documents that can be forged, and have no real-time signal about the applicant's intent, identity, or risk profile.
 
-**TenZor solves this by turning a video call into a complete, intelligent onboarding pipeline.**
+**VeriLend solves this by turning a video call into a complete, intelligent onboarding pipeline.**
 
 During a single live session, the platform simultaneously:
 - Verifies the customer's identity via computer vision
@@ -254,7 +254,7 @@ audit_logs ───────────────────────
 ## 5. Code Structure & Reproducibility
 
 ```
-tenzor/
+verilend/
 ├── client/                        # React + Vite frontend
 │   ├── src/
 │   │   ├── App.jsx                # Router: / and /session/:sessionId
@@ -436,8 +436,8 @@ Zustand is minimal, has no boilerplate, and works well with React hooks. The thr
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/rohanjain1648/Tenzor_Hackaton.git
-cd Tenzor_Hackaton
+git clone https://github.com/rohanjain1648/VeriLend_Hackaton.git
+cd VeriLend_Hackaton
 ```
 
 ### 2. Server setup
@@ -453,7 +453,7 @@ Create `server/.env`:
 PORT=3001
 CLIENT_URL=http://localhost:5173
 GEMINI_API_KEY=your_gemini_api_key_here
-DB_PATH=./data/tenzor.db
+DB_PATH=./data/verilend.db
 ```
 
 Start the server:
@@ -600,4 +600,4 @@ Returns `{ "status": "ok" }`. Used for uptime checks.
 
 ---
 
-*Built for Tenzor Hackathon 2025*
+*Built for VeriLend Hackathon 2025*

@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "TenZor Loan Origination Backend",
+  "description": "VeriLend Loan Origination Backend",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

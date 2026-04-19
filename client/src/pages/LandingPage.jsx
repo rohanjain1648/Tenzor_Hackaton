@@ -15,7 +15,8 @@ export default function LandingPage() {
     setIsCreating(true);
     setError('');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/sessions`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignSource: 'direct' })
@@ -69,7 +70,7 @@ export default function LandingPage() {
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
-          TenZor Loan Origination
+          VeriLend Loan Origination
         </h1>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
           Agentic AI · Video KYC · Real-Time Risk Assessment

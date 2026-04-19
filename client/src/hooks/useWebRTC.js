@@ -16,8 +16,8 @@ export default function useWebRTC(sessionId, role) {
   const initSocket = useCallback(() => {
     if (socketRef.current) return;
     
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
-    console.log('Connecting to socket at:', socketUrl);
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || undefined;
+    console.log('Connecting to socket at:', socketUrl || 'current origin');
     socketRef.current = io(socketUrl);
     
     socketRef.current.on('connect', () => {

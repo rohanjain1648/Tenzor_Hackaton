@@ -105,7 +105,8 @@ export default function VideoSession() {
       ? { estimatedAge: remoteKYC.age, location: remoteKYC.location }
       : { estimatedAge, location: kycLocation };
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/assessments/assess`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const resp = await fetch(`${apiUrl}/api/assessments/assess`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, transcript: transcripts, kycData })
